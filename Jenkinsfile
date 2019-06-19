@@ -18,8 +18,6 @@ pipeline {
         // Path to pipeline project on the Jenkins server
         PIPELINEPATH = "/var/lib/jenkins/pipeline/epic-pl-demo"
 
-        // Environment to check
-
         // Path to pipeline sync project
         TOOLPATH = "/var/lib/jenkins/workspace/ak-luna-pipeline"
 
@@ -51,13 +49,13 @@ pipeline {
                   slackSend(botUser: true, message: "${env.JOB_NAME} - Pulling metadata snippets from: ${env.SYNC_TARGET}", color: '#1E90FF')
                }
         }
-        stage('Compare snippets') {
+        stage('Sync snippets') {
                steps {
-                 dir("/var/lib/jenkins/pipeline/compare/${env.SYNC_TARGET}/config-snippets") {
-                   sh 'ls'
+                 dir("${env.PIPELINEPATH}") {
+                   sh 'python3 $TOOLPATH/compareProject.py $PIPELINEPATH/templates /var/lib/jenkins/pipeline/compare/$SYNC_TARGET/config-snippets'
                  }
 
-                  slackSend(botUser: true, message: "${env.JOB_NAME} - Pulling metadata snippets from: ${env.SYNC_TARGET}", color: '#1E90FF')
+                  slackSend(botUser: true, message: "${env.JOB_NAME} - Comparing and synchronizing metadata snippets...", color: '#1E90FF')
                }
         }
         stage('Reconcile project pipeline state') {

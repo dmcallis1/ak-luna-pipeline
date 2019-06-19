@@ -2,7 +2,6 @@ import logging
 import argparse
 import os
 import requests
-import json
 import sys
 from lib import pipelineUtil
 from akamai.edgegrid import EdgeGridAuth, EdgeRc
