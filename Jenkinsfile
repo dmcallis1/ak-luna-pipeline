@@ -43,10 +43,8 @@ pipeline {
         stage('Pull target metadata') {
                steps {
                  dir("/var/lib/jenkins/pipeline/compare") {
-                   withEnv(["PATH+EXTRA=$PROJ"]) {
                      sh 'rm -rf $SYNC_TARGET/'
                      sh 'akamai pm import -p $SYNC_TARGET'
-                   }
                  }
 
                   slackSend(botUser: true, message: "${env.JOB_NAME} - Pulling metadata snippets from: ${env.SYNC_TARGET}", color: '#1E90FF')
@@ -54,8 +52,8 @@ pipeline {
         }
         stage('Sync snippets') {
                steps {
-                 dir("${env.PIPELINEPATH}") {
-                   sh 'python3 $TOOLPATH/compareProject.py $PIPELINEPATH/templates /var/lib/jenkins/pipeline/compare/$SYNC_TARGET/config-snippets'
+                 withEnv(["PATH+EXTRA=$PROJ"]) {
+                   sh 'python3 $TOOLPATH/compareProject.py $PIPELINEPATH /var/lib/jenkins/pipeline/compare/$SYNC_TARGET/config-snippets'
                  }
 
                   slackSend(botUser: true, message: "${env.JOB_NAME} - Comparing and synchronizing metadata snippets...", color: '#1E90FF')
