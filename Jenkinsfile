@@ -44,9 +44,10 @@ pipeline {
         }
         stage('Pull target metadata') {
                steps {
-
-                  sh 'akamai snippets --help'
-
+                 dir("/var/lib/jenkins/pipeline/compare") {
+                   sh 'akamai snippets sr -p $SYNC_TARGET'
+                 }
+                  
                   slackSend(botUser: true, message: "${env.JOB_NAME} - Pulling metadata snippets from: ${env.SYNC_TARGET}", color: '#1E90FF')
                }
         }
