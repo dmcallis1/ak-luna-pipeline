@@ -15,11 +15,15 @@ pipeline {
         // Link to VCS project containing network list
         PIPELINESCM = "git@github.com:dmcallis1/epic-pl-demo.git"
 
+        // Path to pipeline project on the Jenkins server
+        PIPELINEPATH = "/var/lib/jenkins/pipeline/epic-pl-demo"
+
+        TOOLPATH = "/var/lib/jenkins/workspace/ak-luna-pipeline"
+
         // Comma-seperated e-mail list
         EMAIL = "dmcallis@akamai.com"
 
-        // Path to pipeline project on the Jenkins server
-        PIPELINEPATH = "/var/lib/jenkins/pipeline/epic-pl-demo"
+
     }
     stages {
      stage('Clone Pipeine project') {
@@ -36,9 +40,9 @@ pipeline {
             steps {
 
                   dir("${env.PIPELINEPATH}") {
-
-                      sh "pwd"
-
+                    withEnv(["PATH+EXTRA=$PROJ"]) {
+                      sh 'python3 $TOOLPATH/versionSync.py $PIPELINEPATH'
+                    }
                   }
                   slackSend(botUser: true, message: "${env.JOB_NAME} - reconciling pipeline project.", color: '#1E90FF')
             }
