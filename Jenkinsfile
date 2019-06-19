@@ -67,7 +67,7 @@ pipeline {
                   dir("${env.PIPELINEPATH}") {
                       withEnv(["PATH+EXTRA=$PROJ"]) {
                         sh 'git add *'
-                        sh 'git diff --quiet && git diff --staged --quiet || git commit -m "Updating pipeline from Jenkins"'
+                        sh 'git diff --quiet && git diff --staged --quiet || git commit -m "Updating pipeline from Jenkins" && git push origin master'
                       }
                   }
                   slackSend(botUser: true, message: "${env.JOB_NAME} - reconciling pipeline project state.", color: '#1E90FF')
