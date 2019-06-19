@@ -36,7 +36,15 @@ pipeline {
                 slackSend(botUser: true, message: "${env.JOB_NAME} - Cloning pipeline repo: ${env.PIPELINESCM}", color: '#1E90FF')
             }
         }
-        stage('Reconcile pipeline') {
+        stage('Pull target metadata') {
+               steps {
+
+                  sh 'akamai snippets --help'
+
+                  slackSend(botUser: true, message: "${env.JOB_NAME} - Cloning pipeline repo: ${env.PIPELINESCM}", color: '#1E90FF')
+               }
+        }
+        stage('Reconcile project pipeline state') {
             steps {
 
                   dir("${env.PIPELINEPATH}") {
@@ -44,7 +52,7 @@ pipeline {
                       sh 'python3 $TOOLPATH/versionSync.py $PIPELINEPATH'
                     }
                   }
-                  slackSend(botUser: true, message: "${env.JOB_NAME} - reconciling pipeline project.", color: '#1E90FF')
+                  slackSend(botUser: true, message: "${env.JOB_NAME} - reconciling pipeline project state.", color: '#1E90FF')
             }
         }
     }
