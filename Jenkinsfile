@@ -44,6 +44,7 @@ pipeline {
                steps {
                  dir("/var/lib/jenkins/pipeline/compare") {
                    withEnv(["PATH+EXTRA=$PROJ"]) {
+                     sh 'rm -rf $SYNC_TARGET/'
                      sh 'akamai pm import -p $SYNC_TARGET'
                    }
                  }
