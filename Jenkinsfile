@@ -51,4 +51,5 @@ pipeline {
             slackSend(botUser: true, message: "${env.JOB_NAME} - Pipeline reconciliation failed!", color: '#FF0000')
         }
     }
+  }
 }
