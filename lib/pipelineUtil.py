@@ -86,4 +86,18 @@ def updateDefinition(dir, stage, propertyDict):
 
 def updateImports(dir, importList):
 
+    with open(dir + '/templates/main.json') as template:
+        templateData = json.load(template)
+
+
+        for snippet in importList:
+            templateData['rules']['children'].append('#include:' + snippet)
+
+
+        template.close()
+
+    with open(dir + '/templates/main.json', 'w') as outfile:
+        json.dump(templateData, outfile, indent=4)
+        outfile.close()
+
     return None

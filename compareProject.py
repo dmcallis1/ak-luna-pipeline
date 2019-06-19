@@ -20,6 +20,7 @@ parser.add_argument('snippets', metavar='snippets', type=str, help='The location
 args = parser.parse_args()
 
 
+
 pipelineSnippets = [f for f in os.listdir(args.pipeline + '/templates') if os.path.isfile(os.path.join(args.pipeline + '/templates', f))]
 lunaSnippets = [f for f in os.listdir(args.snippets) if os.path.isfile(os.path.join(args.snippets, f))]
 
@@ -33,8 +34,15 @@ else:
         log.info('Copying snippets from: ' + args.snippets + ' to: ' + args.pipeline + '/templates')
         for snippet in diff:
                 shutil.copyfile(args.snippets + '/' + snippet, args.pipeline + '/templates/' + snippet)
-        sys.exit(0)
+
     except Exception as e:
         log.error('Error copying snippet: ' + snippet)
-        sys.exit(1)
+        log.error(e)
+
+log.info('Updating template metadata snippet includes.')
+try:
+    pipelineUtil.updateImports(args.pipeline, diff)
+except Exception as e:
+    log.error('Failed to update template manifest!')
+    log.error(e)
 
