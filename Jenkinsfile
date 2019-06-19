@@ -67,6 +67,11 @@ pipeline {
                       sh 'python3 $TOOLPATH/versionSync.py $PIPELINEPATH'
                     }
                   }
+                  dir("${env.PIPELINEPATH}") {
+                    sh 'git add *'
+                    sh 'git commit -m "Updating pipeline from Jenkins"'
+                    sh 'git push origin master'
+                  }
                   slackSend(botUser: true, message: "${env.JOB_NAME} - reconciling pipeline project state.", color: '#1E90FF')
             }
         }
