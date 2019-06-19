@@ -29,7 +29,7 @@ pipeline {
 
     }
     parameters {
-      choice(name: 'SYNC_TARGET', choices: ['dev.epic-pl.demo', 'stage.epic-pl.demo', 'prod.epic-pl.demo'], description: 'The source property to compare.')
+      choice(name: 'SYNC_TARGET', choices: ['dev.epic-pl-demo', 'stage.epic-pl-demo', 'prod.epic-pl-demo'], description: 'The source property to compare.')
     }
     stages {
      stage('Clone Pipeine project') {
@@ -47,7 +47,7 @@ pipeline {
                  dir("/var/lib/jenkins/pipeline/compare") {
                    sh 'akamai snippets sr -p $SYNC_TARGET'
                  }
-                  
+
                   slackSend(botUser: true, message: "${env.JOB_NAME} - Pulling metadata snippets from: ${env.SYNC_TARGET}", color: '#1E90FF')
                }
         }
