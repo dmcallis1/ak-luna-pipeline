@@ -18,12 +18,18 @@ pipeline {
         // Path to pipeline project on the Jenkins server
         PIPELINEPATH = "/var/lib/jenkins/pipeline/epic-pl-demo"
 
+        // Environment to check
+
+        // Path to pipeline sync project
         TOOLPATH = "/var/lib/jenkins/workspace/ak-luna-pipeline"
 
         // Comma-seperated e-mail list
         EMAIL = "dmcallis@akamai.com"
 
 
+    }
+    parameters {
+      choice(name: 'SYNC_TARGET', choices: ['dev.epic-pl.demo', 'stage.epic-pl.demo', 'prod.epic-pl.demo'], description: 'The source property to compare.')
     }
     stages {
      stage('Clone Pipeine project') {
@@ -41,7 +47,7 @@ pipeline {
 
                   sh 'akamai snippets --help'
 
-                  slackSend(botUser: true, message: "${env.JOB_NAME} - Cloning pipeline repo: ${env.PIPELINESCM}", color: '#1E90FF')
+                  slackSend(botUser: true, message: "${env.JOB_NAME} - Pulling metadata snippets from: ${env.SYNC_TARGET}", color: '#1E90FF')
                }
         }
         stage('Reconcile project pipeline state') {
