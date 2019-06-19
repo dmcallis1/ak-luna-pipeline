@@ -3,6 +3,7 @@ import argparse
 import os
 import shutil
 import sys
+from lib import pipelineUtil
 
 # Setup logging
 logging.basicConfig(level='INFO', format='%(asctime)s %(levelname)s %(message)s')
@@ -36,3 +37,4 @@ else:
     except Exception as e:
         log.error('Error copying snippet: ' + snippet)
         sys.exit(1)
+

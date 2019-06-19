@@ -83,3 +83,7 @@ def updateDefinition(dir, stage, propertyDict):
             outfile.close()
 
     return None
+
+def updateImports(dir, importList):
+
+    return None
