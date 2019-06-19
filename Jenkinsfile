@@ -71,6 +71,9 @@ pipeline {
                           sh 'git commit -m "Updating pipeline from Jenkins"'
                           sh 'git push origin master'
                         }
+                        finally {
+                          slackSend(botUser: true, message: "${env.JOB_NAME} - No changes to project!", color: '#1E90FF')
+                        }
                       }
                   }
                   slackSend(botUser: true, message: "${env.JOB_NAME} - reconciling pipeline project state.", color: '#1E90FF')
