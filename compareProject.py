@@ -19,30 +19,42 @@ parser.add_argument('pipeline', metavar='pipeline', type=str, help='The location
 parser.add_argument('snippets', metavar='snippets', type=str, help='The location of the property snippets to compare.')
 args = parser.parse_args()
 
-
-
 pipelineSnippets = [f for f in os.listdir(args.pipeline + '/templates') if os.path.isfile(os.path.join(args.pipeline + '/templates', f))]
 lunaSnippets = [f for f in os.listdir(args.snippets) if os.path.isfile(os.path.join(args.snippets, f))]
 
 if pipelineSnippets == lunaSnippets:
-    log.info('Snippets are identical. No reconciliation needed.')
-    sys.exit(0)
-else:
-    diff = [x for x in lunaSnippets if x not in pipelineSnippets]
-    log.info('Snippets are not identical - found ' + str(len(diff)) + ' new snippets.')
-    try:
-        log.info('Copying snippets from: ' + args.snippets + ' to: ' + args.pipeline + '/templates')
-        for snippet in diff:
-                shutil.copyfile(args.snippets + '/' + snippet, args.pipeline + '/templates/' + snippet)
+    log.info('Snippet counts are identical between Luna and Pipeline.')
 
-    except Exception as e:
-        log.error('Error copying snippet: ' + snippet)
-        log.error(e)
+skippedList = []
 
-log.info('Updating template metadata snippet includes.')
-try:
-    pipelineUtil.updateImports(args.pipeline, diff)
-except Exception as e:
-    log.error('Failed to update template manifest!')
-    log.error(e)
+for snippet in lunaSnippets:
 
+    luna = os.path.join(args.snippets, snippet)
+    pipeline = os.path.join(args.pipeline + '/templates', snippet)
+
+    diff = pipelineUtil.compareSnippet(luna, pipeline)
+
+    isToken = False
+
+    if bool(diff) is True:
+        log.info('Discrepancy detected between snippet: ' + snippet)
+        for element in diff:
+
+            if '${env.' in str(element['value']):
+                isToken = True
+                skippedList.append(snippet)
+                break
+
+    else:
+        log.info('No structural changes detected in snippet: ' + snippet)
+        continue
+
+    if isToken is True:
+        log.info('Tokens detected in patch for snippet: ' + snippet)
+        log.info('This snippet needs to be manually reconciled!')
+        continue
+
+    log.info('No tokens were detected in the pipeline snippet ' + snippet + '. It will be replaced with the version from Luna.')
+    shutil.copyfile(args.snippets + '/' + snippet, args.pipeline + '/templates/' + snippet)
+
+log.info('The following snippets were not automatically reconciled due to tokens detected: ' + str(skippedList))

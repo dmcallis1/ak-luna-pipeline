@@ -1,5 +1,6 @@
 import os
 import json
+import jsonpatch
 
 def checkPipelineDir(dir):
 
@@ -64,6 +65,15 @@ def compareDefinition(stageDict, propertyDict):
 
     return equal, reason
 
+def compareStateDefinition(stageDict, propertyDict):
+
+    equal = True
+    reason = ''
+
+    patch = jsonpatch.JsonPatch.make_patch(stageDict, propertyDict['versions']['items'][0])
+
+    return equal, reason
+
 def updateDefinition(dir, stage, propertyDict):
 
     with open(dir + '/environments/' + stage + '/envInfo.json') as envInfo:
@@ -83,6 +93,19 @@ def updateDefinition(dir, stage, propertyDict):
             outfile.close()
 
     return None
+
+def compareSnippet(lunaSnippet, plSnippet):
+
+    with open(lunaSnippet) as file:
+        luna = json.load(file)
+        file.close()
+
+    with open(plSnippet) as file:
+        pipeline = json.load(file)
+        file.close()
+
+    patch = jsonpatch.JsonPatch.from_diff(luna, pipeline)
+    return patch
 
 def updateImports(dir, importList):
 
