@@ -111,12 +111,7 @@ def updateImports(dir, importList):
 
     with open(dir + '/templates/main.json') as template:
         templateData = json.load(template)
-
-
-        for snippet in importList:
-            templateData['rules']['children'].append('#include:' + snippet)
-
-
+        templateData['rules']['children'] = importList
         template.close()
 
     with open(dir + '/templates/main.json', 'w') as outfile:

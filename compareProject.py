@@ -2,7 +2,7 @@ import logging
 import argparse
 import os
 import shutil
-import sys
+import json
 from lib import pipelineUtil
 
 # Setup logging
@@ -21,13 +21,45 @@ args = parser.parse_args()
 
 pipelineSnippets = [f for f in os.listdir(args.pipeline + '/templates') if os.path.isfile(os.path.join(args.pipeline + '/templates', f))]
 lunaSnippets = [f for f in os.listdir(args.snippets) if os.path.isfile(os.path.join(args.snippets, f))]
+lunaDiff = [value for value in lunaSnippets if value not in pipelineSnippets]
 
 if pipelineSnippets == lunaSnippets:
-    log.info('Snippet counts are identical between Luna and Pipeline.')
+    log.info('Snippets are identical between Luna and Pipeline.')
+
+elif lunaDiff:
+    log.info('New Luna snippets detected which are not in pipeline project: ' + args.pipeline)
+
+    # Initialize new list with differences
+    for snippet in lunaDiff:
+        log.info('Copying snippet: ' + snippet + ' to pipeline project: ' + args.pipeline)
+        try:
+            shutil.copyfile(args.snippets + '/' + snippet, args.pipeline + '/templates/' + snippet)
+        except Exception as e:
+            log.error('Error copying snippet to target directory!')
+            log.error('Attempted to copy: ' + args.snippets + '/' + snippet + ' to destination: ' + args.pipeline + '/templates/' + snippet)
+            log.error(e)
+
+else:
+    log.info('Pipeline project has more snippets than Luna. Deleting old snippets..')
+    for snippet in [value for value in pipelineSnippets if value not in lunaSnippets]:
+        log.info('Deleting ' + args.pipeline + '/templates/' + snippet)
+        os.remove(args.pipeline + '/templates/' + snippet)
+
+log.info('Updating pipeline template snippet includes.')
+
+try:
+    with open(args.snippets + '/main.json') as mainSnippet:
+        includes = json.load(mainSnippet)
+        pipelineUtil.updateImports(args.pipeline, includes['rules']['children'])
+
+except Exception as e:
+    log.error('Failed to update template manifest!')
+    log.error(e)
 
 skippedList = []
 
-for snippet in lunaSnippets:
+log.info('Comparing existing snippet structure and content.')
+for snippet in [value for value in lunaSnippets if value in pipelineSnippets]:
 
     luna = os.path.join(args.snippets, snippet)
     pipeline = os.path.join(args.pipeline + '/templates', snippet)
@@ -55,6 +87,12 @@ for snippet in lunaSnippets:
         continue
 
     log.info('No tokens were detected in the pipeline snippet ' + snippet + '. It will be replaced with the version from Luna.')
-    shutil.copyfile(args.snippets + '/' + snippet, args.pipeline + '/templates/' + snippet)
 
-log.info('The following snippets were not automatically reconciled due to tokens detected: ' + str(skippedList))
+    try:
+        shutil.copyfile(args.snippets + '/' + snippet, args.pipeline + '/templates/' + snippet)
+
+    except Exception as e:
+        log.error('Error copying snippet: ' + snippet)
+        log.error(e)
+
+log.info('The following snippets were not automatically reconciled (snippet content) due to tokens detected within the pipeline snippet: ' + str(skippedList))
