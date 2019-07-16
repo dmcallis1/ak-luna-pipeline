@@ -94,6 +94,23 @@ def updateDefinition(dir, stage, propertyDict):
 
     return None
 
+def updateActivation(dir, stage, networkDict):
+
+    with open(dir + '/environments/' + stage + '/envInfo.json') as envInfo:
+
+        networkData = json.load(envInfo)
+
+        dictElement = 'activeIn_' + networkDict['network'] + '_Info'
+
+        networkData[dictElement]['propertyVersion'] = networkDict['version']
+        networkData[dictElement]['etag'] = networkDict['etag']
+
+        with open (dir + '/environments/' + stage + '/envInfo.json', 'w') as outfile:
+            json.dump(networkData, outfile, indent=4)
+            outfile.close()
+
+    return None
+
 def compareSnippet(lunaSnippet, plSnippet):
 
     with open(lunaSnippet) as file:

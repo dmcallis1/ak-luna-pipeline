@@ -54,6 +54,7 @@ for stage in stageDict:
         versionDetails = session.get(endpoint).json()
     except Exception as e:
         log.error('Error pulling versions for property: ' + stageDict[stage]['propertyName'])
+        log.error(e)
 
     version = str(versionDetails['versions']['items'][0]['propertyVersion'])
 
@@ -61,8 +62,25 @@ for stage in stageDict:
     try:
         endpoint = baseurl + '/papi/v1/properties/' + propertyId + '/versions/' + version
         propertyDetails = session.get(endpoint).json()
+
     except Exception as e:
         log.error('Error pulling property version details.')
+        log.error(e)
+
+    log.info('Reconciling activation status across PRODUCTION and STAGING.')
+
+    for network in ['STAGING', 'PRODUCTION']:
+        try:
+            endpoint = baseurl + '/papi/v1/properties/' + propertyId + '/versions/latest?activatedOn=' + network
+
+            networkDetails = session.get(endpoint).json()
+            if 'versions' in networkDetails:
+                networkDict = {'network': network, 'version': networkDetails['versions']['items'][0]['propertyVersion'], 'etag': networkDetails['versions']['items'][0]['etag']}
+                pipelineUtil.updateActivation(args.pipeline, stage, networkDict)
+
+        except Exception as e:
+            log.error('Error pulling property activation details.')
+            log.error(e)
 
     log.info('Comparing Pipeline stage definition with Luna Definition.')
     equal, reason = pipelineUtil.compareDefinition(stageDict[stage], propertyDetails)
@@ -75,3 +93,4 @@ for stage in stageDict:
         log.info('Pipeline definition updated with Luna details.')
     else:
         log.info('Property definition for ' + stageDict[stage]['propertyName'] + ' (stage: ' + stage + ') is in sync with Luna.')
+
